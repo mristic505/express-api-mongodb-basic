@@ -4,68 +4,72 @@ const express = require('express');
 const router = express.Router();
 
 // Create Schema for a collection
-const genreSchema = new mongoose.Schema({
+const customerSchema = new mongoose.Schema({
     name: {
       type: String,
       required: true
-    }
+    },
+    isGold: Boolean,
+    phone: Number
 });
 
 // Create Class based on the schema
-const GenreMDBModel = mongoose.model('GenreMDBModel', genreSchema, 'genres');
+const CustomerMDBModel = mongoose.model('CustomerMDBModel', customerSchema, 'customers');
 
 // GET ======================================
 router.get('/', async (req, res) => {
-  let genres = await GenreMDBModel.find()
-  res.send(genres);
+  let customers = await CustomerMDBModel.find()
+  res.send(customers);
 });
 
 // POST =====================================
 router.post('/', async (req, res) => {
-  const { error } = validateGenreMDBModel(req.body); 
+  const { error } = validateCustomerMDBModel(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
-  let genre = new GenreMDBModel({    
-    name: req.body.name
+  let customer = new CustomerMDBModel({    
+    name: req.body.name,
+    isGold: req.body.isGold,
+    phone: req.body.phone
   });
-  genre = await genre.save();
+  customer = await customer.save();
 
-  res.send(genre);
+  res.send(customer);
 });
 
 // PUT ======================================
 router.put('/:id', async (req, res) => {
 
   // Validate provided value with JOI
-  const { error } = validateGenreMDBModel(req.body); 
+  const { error } = validateCustomerMDBModel(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
   // Validate ID format and length
   idFormatNotValid(req.params.id) && res.status(404).send('Invalid ID format');
 
   // Look for document in DB and update if found
-  let genre = await GenreMDBModel.findByIdAndUpdate(req.params.id, {name: req.body.name}, {new: true});
+  let customer = await CustomerMDBModel.findByIdAndUpdate(req.params.id, {name: req.body.name}, {new: true});
   // If document not found in DB
-  if (!genre) return res.status(404).send('The genre with the given ID was not found.');
+  if (!customer) return res.status(404).send('The customer with the given ID was not found.');
 
-  res.send(genre);
+  res.send(customer);
 });
 
 // DELETE ===================================
 router.delete('/:id', async (req, res) => {
   // Validate provided value with JOI
-  const { error } = validateGenreMDBModel(req.body); 
+  const { error } = validateCustomerMDBModel(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
   // Validate ID format and length
   idFormatNotValid(req.params.id) && res.status(404).send('Invalid ID format');
 
   // Look for document in DB and update if found
-  let genre = await GenreMDBModel.findByIdAndRemove(req.params.id);
+  let customer = await CustomerMDBModel.findByIdAndRemove(req.params.id);
   // If document not found in DB
-  if (!genre) return res.status(404).send('The genre with the given ID was not found.');
+  if (!customer) return res.status(404).send('The customer with the given ID was not found.');
 
-  res.send(genre);
+  res.send(customer);
 });
 
 // GET SINGLE ENTRY ==============================
@@ -73,18 +77,20 @@ router.get('/:id', async (req, res) => {
   // Validate ID format and length
   idFormatNotValid(req.params.id) && res.status(404).send('Invalid ID format');
   // Look for document in DB
-  const genre = await GenreMDBModel.findById(req.params.id);
+  const customer = await CustomerMDBModel.findById(req.params.id);
   // Send response
-  genre? res.send(genre) : res.status(404).send('The genre with the given ID was not found.');
+  customer? res.send(customer) : res.status(404).send('The customer with the given ID was not found.');
 });
 
 // VALIDATE WITH Joi FUNCTION
-function validateGenreMDBModel(genre) {
+function validateCustomerMDBModel(customer) {
   const schema = {
-    name: Joi.string().min(3).required()
+    name: Joi.string().min(3).required(),
+    isGold: Joi.boolean(),
+    phone: Joi.number()
   };
 
-  return Joi.validate(genre, schema);
+  return Joi.validate(customer, schema);
 }
 
 const idFormatNotValid = (id) => {
