@@ -8,7 +8,7 @@ const customerSchema = new mongoose.Schema({
       required: true
     },
     isGold: Boolean,
-    phone: Number
+    phone: String
 });
 
 // Create Class based on the schema
@@ -25,5 +25,5 @@ function validateCustomer(customer) {
     return Joi.validate(customer, schema);
   }
 
-Exports.Customer = Customer;
-Exports.validateCustomer = validateCustomer;
+exports.Customer = Customer;
+exports.validate = validateCustomer;

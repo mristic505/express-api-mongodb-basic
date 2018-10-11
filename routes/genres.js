@@ -1,31 +1,21 @@
 const Joi = require('joi');
+const {Genre, validate} = require('../models/genre');
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 
-// Create Schema for a collection
-const genreSchema = new mongoose.Schema({
-    name: {
-      type: String,
-      required: true
-    }
-});
-
-// Create Class based on the schema
-const GenreMDBModel = mongoose.model('GenreMDBModel', genreSchema, 'genres');
-
 // GET ======================================
 router.get('/', async (req, res) => {
-  let genres = await GenreMDBModel.find()
+  let genres = await Genre.find()
   res.send(genres);
 });
 
 // POST =====================================
 router.post('/', async (req, res) => {
-  const { error } = validateGenreMDBModel(req.body); 
+  const { error } = validate(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
-  let genre = new GenreMDBModel({    
+  let genre = new Genre({    
     name: req.body.name
   });
   genre = await genre.save();
@@ -37,14 +27,14 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
 
   // Validate provided value with JOI
-  const { error } = validateGenreMDBModel(req.body); 
+  const { error } = validate(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
   // Validate ID format and length
   idFormatNotValid(req.params.id) && res.status(404).send('Invalid ID format');
 
   // Look for document in DB and update if found
-  let genre = await GenreMDBModel.findByIdAndUpdate(req.params.id, {name: req.body.name}, {new: true});
+  let genre = await Genre.findByIdAndUpdate(req.params.id, {name: req.body.name}, {new: true});
   // If document not found in DB
   if (!genre) return res.status(404).send('The genre with the given ID was not found.');
 
@@ -54,14 +44,14 @@ router.put('/:id', async (req, res) => {
 // DELETE ===================================
 router.delete('/:id', async (req, res) => {
   // Validate provided value with JOI
-  const { error } = validateGenreMDBModel(req.body); 
+  const { error } = validate(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
   // Validate ID format and length
   idFormatNotValid(req.params.id) && res.status(404).send('Invalid ID format');
 
   // Look for document in DB and update if found
-  let genre = await GenreMDBModel.findByIdAndRemove(req.params.id);
+  let genre = await Genre.findByIdAndRemove(req.params.id);
   // If document not found in DB
   if (!genre) return res.status(404).send('The genre with the given ID was not found.');
 
@@ -73,19 +63,10 @@ router.get('/:id', async (req, res) => {
   // Validate ID format and length
   idFormatNotValid(req.params.id) && res.status(404).send('Invalid ID format');
   // Look for document in DB
-  const genre = await GenreMDBModel.findById(req.params.id);
+  const genre = await Genre.findById(req.params.id);
   // Send response
   genre? res.send(genre) : res.status(404).send('The genre with the given ID was not found.');
 });
-
-// VALIDATE WITH Joi FUNCTION
-function validateGenreMDBModel(genre) {
-  const schema = {
-    name: Joi.string().min(3).required()
-  };
-
-  return Joi.validate(genre, schema);
-}
 
 const idFormatNotValid = (id) => {
     // Validate ID format and length

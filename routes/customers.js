@@ -1,3 +1,4 @@
+const {Customer, validate} = require('../models/customer');
 const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
@@ -10,7 +11,7 @@ router.get('/', async (req, res) => {
 
 // POST =====================================
 router.post('/', async (req, res) => {
-  const { error } = validateCustomer(req.body); 
+  const { error } = validate(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
   let customer = new Customer({    
@@ -27,7 +28,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
 
   // Validate provided value with JOI
-  const { error } = validateCustomer(req.body); 
+  const { error } = validate(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
   // Validate ID format and length
@@ -44,7 +45,7 @@ router.put('/:id', async (req, res) => {
 // DELETE ===================================
 router.delete('/:id', async (req, res) => {
   // Validate provided value with JOI
-  const { error } = validateCustomer(req.body); 
+  const { error } = validate(req.body); 
   if (error) return res.status(400).send(error.details[0].message);
 
   // Validate ID format and length
@@ -68,11 +69,9 @@ router.get('/:id', async (req, res) => {
   customer? res.send(customer) : res.status(404).send('The customer with the given ID was not found.');
 });
 
-
 const idFormatNotValid = (id) => {
     // Validate ID format and length
     return !mongoose.Types.ObjectId.isValid(id);
 }
-
 
 module.exports = router;
